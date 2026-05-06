@@ -12,7 +12,6 @@ public:
 public:
 	void Push(TWHEEL* data);
 	void Pop(TWHEEL* data);
-	void Replace(TWHEEL* data, int subTime);
 
 	void AddTimerWheel(int tick, int wheelsize);
 	virtual void PostProcessing();			// 타이머 다돈거 후처리

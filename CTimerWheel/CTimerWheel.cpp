@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <process.h>
 
+#define __CHECK_TIME__
+
 CTimerWheel::CTimerWheel(int tick, int wheelsize)
 {
 	m_iTick = 0;
@@ -59,14 +61,11 @@ void CTimerWheel::Update()
 void CTimerWheel::Push(TWHEEL* data)
 {
 	int Time = data->Time;
-	
-	int round = Time / m_iWheelSize + 1;	// 몇바퀴 돌아야 하는지 계산
+
+	int round = (Time - 1) / m_iWheelSize + 1;	// 몇바퀴 돌아야 하는지 계산
 	int offset = Time % m_iWheelSize; // 남은 시간 계산
 	
 	int index = (m_iIndex + offset) % m_iWheelSize; // 현재 인덱스 를 기준으로 offset 만큼 떨어진 위치
-
-	if (m_iIndex == index)
-		round++;
 
 	data->Round = round;
 	data->Index = index;
@@ -74,9 +73,9 @@ void CTimerWheel::Push(TWHEEL* data)
 	m_vecTimerWheel[index].push_back(data);
 	
 	data->PushTime = GetTickCount();
-#ifdef _DEBUG
+#ifdef __CHECK_TIME__
 	QueryPerformanceCounter(&data->DebugTime);
-#endif // _DEBUG
+#endif // __CHECK_TIME__
 }
 
 bool CTimerWheel::Pop(TWHEEL* data)
@@ -107,22 +106,16 @@ CTimerWheel CTimerWheel::operator++()
 
 bool st_TimerWheel::TimeCheck()
 {
-	Round--;
-	if (Round <= 0)
-	{
-		return true;
-	}
-	else
-		return false;
+	return --Round <= 0;
 }
 
 bool st_TimerWheel::Update(LARGE_INTEGER freq)
 {
-#ifdef _DEBUG
+#ifdef __CHECK_TIME__
 	LARGE_INTEGER end;
 	QueryPerformanceCounter(&end);
 	double ms = (double)(end.QuadPart - DebugTime.QuadPart) * 1000 / (double)freq.QuadPart;
 	printf("UPDATE %d  DebugTime %.2f[S] \n", Time, ms/1000.f);
-#endif // _DEBUG
+#endif // __CHECK_TIME__
 	return true;
 }

@@ -55,7 +55,7 @@ void CTimerWheelManager::Push(TWHEEL* data)
 	{
 		if (data->Time > m_vecTimerWheel[i]->GetMaxCheckTimer())
 			continue;
-
+		
 		m_vecTimerWheel[i]->Push(data);
 		break;
 	}
@@ -70,39 +70,6 @@ void CTimerWheelManager::Pop(TWHEEL* data)
 
 		m_vecTimerWheel[i]->Pop(data);
 	}
-}
-
-void CTimerWheelManager::Replace(TWHEEL* data, int subTime)
-{
-	CTimerWheel* pTimerWheel = nullptr;
-	
-	for (int i = 0; i < m_vecTimerWheelSize; i++)
-	{
-		if (data->Time > m_vecTimerWheel[i]->GetMaxCheckTimer())
-			continue;
-
-		pTimerWheel = m_vecTimerWheel[i];
-		break;
-	}
-	if (pTimerWheel == nullptr)
-		return;
-
-	bool ret = pTimerWheel->Pop(data);
-	if (!ret)
-		return;
-
-	unsigned int RemaindTime = 0;
-	
-	RemaindTime = data->Time - (GetTickCount() - data->PushTime) - subTime;
-	
-	if (RemaindTime <= 0)
-	{
-		pTimerWheel->m_listCompleteTimeEvent.push_back(data);
-		return;
-	}
-	
-	data->Time = RemaindTime;
-	Push(data);
 }
 
 void CTimerWheelManager::AddTimerWheel(int tick, int wheelsize)

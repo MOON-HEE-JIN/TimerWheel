@@ -99,6 +99,7 @@ unsigned __stdcall TimerWheelTestThread(void* arg)
 
 	while (1)
 	{
+		//WaitForSingleObject(hTimer, 1);
 		int ret = WaitForSingleObject(g_hTimerWheelTestThreadHandle, 1);
 		TestObject.Update();
 
@@ -132,7 +133,7 @@ unsigned __stdcall TimerWheelTestThread(void* arg)
 	return 0;
 }
 
-unsigned __stdcall test(void* arg)
+unsigned __stdcall test()
 {
 	timeBeginPeriod(1);
 
@@ -162,6 +163,7 @@ unsigned __stdcall test(void* arg)
 	static bool bInit = false;
 	for (int i = 0; i < 9; i++)
 		timer.Push(vec[i]);
+
 	while (1)
 	{
 		WaitForSingleObject(thread, 1);
