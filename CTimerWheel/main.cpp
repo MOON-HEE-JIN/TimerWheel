@@ -8,6 +8,7 @@
 
 HANDLE thread;
 HANDLE g_hTimerWheelTestThreadHandle;
+#define MILLISECOND 1
 #define SECOND 1000
 #define MIN		SECOND * 60
 #define HOUR	MIN * 60
@@ -36,19 +37,27 @@ unsigned __stdcall TimerWheelTestThread(void* arg)
 			switch (i)
 			{
 			case 0:
-				TotalTime = rand() % 60 * SECOND + rand() % 1000;
+				TotalTime = rand() % 60 * SECOND + rand() % 1000 * MILLISECOND;
 				break;
 			case 1:
-				TotalTime = rand() % 60 * MIN + (rand() % 60)*SECOND;
+				TotalTime = rand() % 60 * MIN + (rand() % 60) * SECOND + (rand() % 1000) * MILLISECOND;
+				if (TotalTime == 105000)
+				{
+					TotalTime = 1 * MIN + 10 * SECOND + 800;
+				}
 				break;
 			case 2:
-				TotalTime = rand() % 24 * HOUR + (rand() % 60) * MIN;
+				TotalTime = rand() % 24 * HOUR + (rand() % 60) * MIN + (rand() % 60) * SECOND + (rand() % 1000) * MILLISECOND;
 				break;
 			default:
 				TotalTime = 0;
 				break;
 			}
 			vecTestData[i * 33 + j]->Time = TotalTime;
+#ifdef __DEBUG_TIMERWHEEL__
+			vecTestData[i * 33 + j]->OriginalTime = TotalTime;
+#endif // __DEBUG_TIMERWHEEL__
+
 		}
 	}
 
@@ -104,7 +113,7 @@ unsigned __stdcall TimerWheelTestThread(void* arg)
 		TestObject.Update();
 
 		if (TestObject.GetCompleteData() >= 99)
-			return 0;
+			break;
 	}
 
 	int nLoop = TestObject.GetCompleteData();

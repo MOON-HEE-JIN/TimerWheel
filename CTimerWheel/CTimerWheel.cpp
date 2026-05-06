@@ -4,8 +4,6 @@
 #include <Windows.h>
 #include <process.h>
 
-#define __CHECK_TIME__
-
 CTimerWheel::CTimerWheel(int tick, int wheelsize)
 {
 	m_iTick = 0;
@@ -36,19 +34,17 @@ void CTimerWheel::Update()
 
 		if (ret) // 실행됨
 		{
-			/*
-			if ((*biter)->RemaindTime > m_iPassTick)	// m_iPassTick 보다 크면 시간을 다시 잰다
+			if ((*biter)->RemainTime > m_iPassTick)	// m_iPassTick 보다 크면 시간을 다시 잰다
 			{
-				(*biter)->Time = (*biter)->RemaindTime;
+				(*biter)->Time = (*biter)->RemainTime;
 				m_listRemainTimeEvent.push_back((*biter));
 			}
 			else
 			{
+				(*biter)->Update(freq);
+				m_listCompleteTimeEvent.push_back(*biter);
 			}
-			*/
-			(*biter)->Update(freq);
-			m_listCompleteTimeEvent.push_back(*biter);
-			
+
 			biter = m_vecTimerWheel[m_iIndex].erase(biter);
 		}
 		else // 실행 안됨
@@ -60,7 +56,8 @@ void CTimerWheel::Update()
 
 void CTimerWheel::Push(TWHEEL* data)
 {
-	int Time = data->Time;
+	// 시간 측정의 최소 단위는 tick
+	int Time = data->Time / m_iUpdateTick;	// tick 단위로 변환
 
 	int round = (Time - 1) / m_iWheelSize + 1;	// 몇바퀴 돌아야 하는지 계산
 	int offset = Time % m_iWheelSize; // 남은 시간 계산
@@ -69,13 +66,14 @@ void CTimerWheel::Push(TWHEEL* data)
 
 	data->Round = round;
 	data->Index = index;
+	data->RemainTime = data->Time % m_iUpdateTick;	// tick 단위로 나눈 나머지 시간
 
 	m_vecTimerWheel[index].push_back(data);
 	
-	data->PushTime = GetTickCount();
-#ifdef __CHECK_TIME__
-	QueryPerformanceCounter(&data->DebugTime);
-#endif // __CHECK_TIME__
+#ifdef __DEBUG_TIMERWHEEL__
+	if (data->DebugTime.QuadPart == 0)
+		QueryPerformanceCounter(&data->DebugTime);
+#endif // __DEBUG_TIMERWHEEL__
 }
 
 bool CTimerWheel::Pop(TWHEEL* data)
@@ -111,11 +109,11 @@ bool st_TimerWheel::TimeCheck()
 
 bool st_TimerWheel::Update(LARGE_INTEGER freq)
 {
-#ifdef __CHECK_TIME__
+#ifdef __DEBUG_TIMERWHEEL__
 	LARGE_INTEGER end;
 	QueryPerformanceCounter(&end);
 	double ms = (double)(end.QuadPart - DebugTime.QuadPart) * 1000 / (double)freq.QuadPart;
-	printf("UPDATE %d  DebugTime %.2f[S] \n", Time, ms/1000.f);
-#endif // __CHECK_TIME__
+	printf("UPDATE %d  DebugTime %.2f[S] \n", OriginalTime, ms/1000.f);
+#endif // __DEBUG_TIMERWHEEL__
 	return true;
 }

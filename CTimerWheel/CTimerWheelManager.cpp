@@ -97,11 +97,25 @@ void CTimerWheelManager::PostProcessing()
 {
 	std::list<TWHEEL*>::iterator biter;
 	std::list<TWHEEL*>::iterator eiter;
-	for (int i = 1; i < m_vecTimerWheelSize; i++)
+	for (int i = 0; i < m_vecTimerWheelSize; i++)
 	{
-		biter = m_vecTimerWheel[i]->m_listCompleteTimeEvent.begin();
-		eiter = m_vecTimerWheel[i]->m_listCompleteTimeEvent.end();
-		for (biter; biter != eiter; ++biter)
-			m_vecTestCompleteData.push_back(*biter);
+		if (!m_vecTimerWheel[i]->m_listRemainTimeEvent.empty())
+		{
+			biter = m_vecTimerWheel[i]->m_listRemainTimeEvent.begin();
+			eiter = m_vecTimerWheel[i]->m_listRemainTimeEvent.end();
+			for (biter; biter != eiter; ++biter)
+				Push(*biter);
+
+			m_vecTimerWheel[i]->m_listRemainTimeEvent.clear();
+		}
+
+		if (!m_vecTimerWheel[i]->m_listCompleteTimeEvent.empty())
+		{
+			biter = m_vecTimerWheel[i]->m_listCompleteTimeEvent.begin();
+			eiter = m_vecTimerWheel[i]->m_listCompleteTimeEvent.end();
+			for (biter; biter != eiter; ++biter)
+				m_vecTestCompleteData.push_back(*biter);
+			m_vecTimerWheel[i]->m_listCompleteTimeEvent.clear();
+		}
 	}
 }

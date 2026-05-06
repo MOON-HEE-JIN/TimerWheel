@@ -3,6 +3,8 @@
 #include <list>
 #include <Windows.h>
 
+#define __DEBUG_TIMERWHEEL__
+
 class CTimerWheel;
 
 typedef struct st_TimerWheel
@@ -11,10 +13,21 @@ typedef struct st_TimerWheel
 	
 	int Round;
 	int Index;
-	
-	unsigned int PushTime;
+	int RemainTime;
 
+#ifdef __DEBUG_TIMERWHEEL__
 	LARGE_INTEGER DebugTime;
+	unsigned int OriginalTime;
+#endif // __DEBUG_TIMERWHEEL__
+
+
+	st_TimerWheel() : Time(0), Round(0), Index(0), RemainTime(0)
+	{
+#ifdef __DEBUG_TIMERWHEEL__
+		DebugTime.QuadPart = 0;
+		OriginalTime = 0;
+#endif // __DEBUG_TIMERWHEEL__
+	}
 	bool TimeCheck();
 	bool Update(LARGE_INTEGER freq);
 }TWHEEL;
@@ -42,6 +55,7 @@ private:
 
 public:
 	std::list<TWHEEL*> m_listCompleteTimeEvent;			// 처리가 완료된 리스트
+	std::list<TWHEEL*> m_listRemainTimeEvent;			// 남은 시간 이벤트 리스트
 
 	int GetTick() { return m_iUpdateTick; }
 	int GetWheelSize() { return m_iWheelSize; }
